@@ -1,6 +1,7 @@
 const express = require('express');
 const tweet = require('../models/tweet');
 const usuario = require('../models/usuario');
+const vinculo = require('../models/vinculo');
 
 const router = express.Router()
 
@@ -127,6 +128,67 @@ router.put('/tweet/update/:id', async(req, res) => {
         res.send(result)
     } catch (error) {
         res.status(400).json({ message: error.message })
+    }
+})
+
+//DELETE TWEEEETT
+/**/
+
+/***************************VINCULO************************/
+
+router.post('/vinculo/post', async (req, res) => {
+    const data = new vinculo({
+        seguidor_id: req.body.seguidor_id,
+        seguido_id: req.body.seguido_id,
+        fecha: new Date(),
+    })
+
+    try {
+        const dataToSave = await data.save();
+        res.status(200).json(dataToSave)
+    }
+    catch (error) {
+        res.status(400).json({message: error.message})
+    }
+})
+
+//Get all Method
+router.get('/vinculo/getAll', async (req, res) => {
+    try{
+        const data = await vinculo.find();
+        res.json(data)
+    }
+    catch(error){
+        res.status(500).json({message: error.message})
+    }
+})
+
+//Get seguidos de un usuario
+router.get('/vinculo/seguidos/:usuario_id', async (req, res) => {
+    try{
+        const data = await vinculo.find(
+            {
+                "seguidor_id":req.params.usuario_id
+            }
+        );
+        res.json(data)
+    }
+    catch(error){
+        res.status(500).json({message: error.message})
+    }
+})
+
+//Get seguidores de un usuario
+router.get('/vinculo/seguidores/:usuario_id', async (req, res) => {
+    try{
+        const data = await vinculo.find(
+            {
+                "seguido_id":req.params.usuario_id
+            }
+        );
+        res.json(data)
+    }catch(error){
+        res.status(500).json({message: error.message})
     }
 })
 
