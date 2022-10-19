@@ -133,7 +133,15 @@ router.put('/tweet/update/:id', async(req, res) => {
 })
 
 //DELETE TWEEEETT
-/**/
+//Delete by ID Method
+router.delete('/tweet/delete/:id', async (req, res) => {
+    try {
+        await usuario.findByIdAndDelete(req.params.id)
+        res.send(`${id} ha sido eliminado`)
+    } catch (error) {
+        res.status(400).json({ message: error.message })
+    }
+})
 
 /***************************VINCULO************************/
 
