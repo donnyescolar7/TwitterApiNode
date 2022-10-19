@@ -1,15 +1,39 @@
 const express = require('express');
+const tweet = require('../models/tweet');
+const usuario = require('../models/usuario');
 
 const router = express.Router()
 
 //Post Method
-router.post('/post', (req, res) => {
-    res.send('Post API')
+router.post('/usuario/post', async (req, res) => {
+
+    //Formato Fecha "YYYY-mm-dd"
+
+    const data = new usuario({
+        usuario_id: req.body.usuario_id,
+        nombre: req.body.nombre,
+        fecha_nacimiento: new Date(req.body.fecha_nacimiento),
+        descripcion: req.body.descripcion,
+    })
+
+    try {
+        const dataToSave = await data.save();
+        res.status(200).json(dataToSave)
+    }
+    catch (error) {
+        res.status(400).json({message: error.message})
+    }
 })
 
 //Get all Method
-router.get('/getAll', (req, res) => {
-    res.send('Get All API')
+router.get('/usuario/getAll', async (req, res) => {
+    try{
+        const data = await usuario.find();
+        res.json(data)
+    }
+    catch(error){
+        res.status(500).json({message: error.message})
+    }
 })
 
 //Get by ID Method
@@ -18,13 +42,92 @@ router.get('/getOne/:id', (req, res) => {
 })
 
 //Update by ID Method
-router.patch('/update/:id', (req, res) => {
-    res.send('Update by ID API')
+router.put('/usuario/update/:usuario_id', async(req, res) => {
+    
+    try {
+        const result = await usuario.findOneAndUpdate(
+            {
+                "usuario_id": req.params.usuario_id
+            },
+            req.body
+        )
+        res.send(result)
+    } catch (error) {
+        res.status(400).json({ message: error.message })
+    }
 })
 
 //Delete by ID Method
-router.delete('/delete/:id', (req, res) => {
-    res.send('Delete by ID API')
+router.delete('/usuario/delete/:usuario_id', async (req, res) => {
+    try {
+        const usuario_id = req.params.usuario_id;
+        await usuario.findOneAndDelete({"usuario_id": usuario_id})
+        res.send(`${usuario_id} ha sido eliminado`)
+    } catch (error) {
+        res.status(400).json({ message: error.message })
+    }
+})
+
+
+/***************************TWEETS************************/
+
+router.post('/tweet/post', async (req, res) => {
+    
+    const data = new tweet({
+        usuario_id: req.body.usuario_id,
+        texto: req.body.texto,
+        fecha: new Date(),
+    })
+
+    try {
+        const dataToSave = await data.save();
+        res.status(200).json(dataToSave)
+    }
+    catch (error) {
+        res.status(400).json({message: error.message})
+    }
+})
+
+//Get all Method
+router.get('/tweet/getAll', async (req, res) => {
+    try{
+        const data = await tweet.find();
+        res.json(data)
+    }
+    catch(error){
+        res.status(500).json({message: error.message})
+    }
+})
+
+//Get by user_id
+router.get('/tweet/getAll/:user_id', async (req, res) => {
+    try{
+        const data = await tweet.find(
+            {"usuario_id" : req.params.user_id}
+        );
+        res.json(data)
+    }
+    catch(error){
+        res.status(500).json({message: error.message})
+    }
+})
+
+//Update by ID Method
+router.put('/tweet/update/:id', async(req, res) => {
+    
+    try {
+        const result = await tweet.findOneAndUpdate(
+            {
+                "_id": req.params.id
+            },
+            {
+                "texto" : req.body.texto
+            }
+        )
+        res.send(result)
+    } catch (error) {
+        res.status(400).json({ message: error.message })
+    }
 })
 
 module.exports = router;
