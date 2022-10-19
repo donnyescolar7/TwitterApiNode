@@ -63,6 +63,7 @@ router.delete('/usuario/delete/:usuario_id', async (req, res) => {
     try {
         const usuario_id = req.params.usuario_id;
         await usuario.findOneAndDelete({"usuario_id": usuario_id})
+        await vinculo.deleteMany({ $or: [ { seguido_id: usuario_id }, { seguidor_id: usuario_id } ] } )
         res.send(`${usuario_id} ha sido eliminado`)
     } catch (error) {
         res.status(400).json({ message: error.message })
