@@ -218,8 +218,8 @@ router.delete('/vinculo/delete/', async (req, res) => {
 router.get('/timeline/:usuario_id', async (req, res) => {
     try{
         let seguidos = await vinculo.find({seguidor_id: req.params.usuario_id});
-        seguidos = seguidos.map((o) => o.seguido_id)
-        const timeline = await tweet.find({usuario_id: {$in: seguidos}});
+        seguidos = seguidos.map(o => o.seguido_id)
+        const timeline = await tweet.find({usuario_id: {$in: seguidos}}).sort({fecha: -1});
         res.json(timeline)
     }
     catch(error){
