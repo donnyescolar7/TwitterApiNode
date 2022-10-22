@@ -201,4 +201,30 @@ router.get('/vinculo/seguidores/:usuario_id', async (req, res) => {
     }
 })
 
+//Delete by ID of both users
+router.delete('/vinculo/delete/', async (req, res) => {
+    try {
+        await usuario.findOneAndDelete({
+            seguidor_id : req.body.seguidor_id,
+            seguido_id: req.body.seguido_id,
+        })
+        res.send(`${req.body.seguidor_id} ha dejado de seguir a ${req.body.seguido_id}`)
+    } catch (error) {
+        res.status(400).json({ message: error.message })
+    }
+})
+
+//Get all Method
+router.get('/timeline/:usuario_id', async (req, res) => {
+    try{
+        let seguidos = await vinculo.find({seguidor_id: req.params.usuario_id});
+        seguidos = seguidos.map((o) => o.seguido_id)
+        const timeline = await tweet.find({usuario_id: {$in: seguidos}});
+        res.json(timeline)
+    }
+    catch(error){
+        res.status(500).json({message: error.message})
+    }
+})
+
 module.exports = router;
