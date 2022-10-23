@@ -2,6 +2,7 @@ const express = require('express');
 const tweet = require('../models/tweet');
 const usuario = require('../models/usuario');
 const vinculo = require('../models/vinculo');
+const like = require('../models/like');
 
 const router = express.Router()
 
@@ -221,6 +222,61 @@ router.get('/timeline/:usuario_id', async (req, res) => {
         seguidos = seguidos.map(o => o.seguido_id)
         const timeline = await tweet.find({usuario_id: {$in: seguidos}}).sort({fecha: -1});
         res.json(timeline)
+    }
+    catch(error){
+        res.status(500).json({message: error.message})
+    }
+})
+
+/***************************LIKE************************/
+
+router.post('/like/post', async (req, res) => {
+    const data = new like({
+        usuario_id: req.body.usuario_id,
+        tweet_id: req.body.tweet_id,
+        fecha: new Date(),
+    })
+
+    try {
+        const dataToSave = await data.save();
+        res.status(200).json(dataToSave)
+    }
+    catch (error) {
+        res.status(400).json({message: error.message})
+    }
+})
+
+//Get all Method
+router.get('/like/getAll', async (req, res) => {
+    try{
+        const data = await like.find();
+        res.json(data)
+    }
+    catch(error){
+        res.status(500).json({message: error.message})
+    }
+})
+
+//Delete by ID of both users
+router.delete('/like/delete/', async (req, res) => {
+    try {
+        await usuario.findOneAndDelete({
+            usuario_id : req.body.usuario_id,
+            tweet_id: req.body.tweet_id,
+        })
+        res.send(`${req.body.usuario_id} ya no le gusta la publicación ${req.body.tweet_id}`)
+    } catch (error) {
+        res.status(400).json({ message: error.message })
+    }
+})
+
+//Get all Method
+router.get('/likeadas/:usuario_id', async (req, res) => {
+    try{
+        let ids_likeadas = await like.find({usuario_id: req.params.usuario_id});
+        ids_likeadas = ids_likeadas.map(o => o.tweet_id);
+        const likeadas = await tweet.find({_id: {$in: ids_likeadas}}).sort({fecha: -1});
+        res.json(likeadas)
     }
     catch(error){
         res.status(500).json({message: error.message})
