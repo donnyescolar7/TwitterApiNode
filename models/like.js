@@ -7,7 +7,7 @@ const dataSchema = new mongoose.Schema({
     },
     tweet_id: {
         required: true,
-        type: String
+        type: mongoose.ObjectId
     },
     fecha: {
         required: true,
