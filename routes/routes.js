@@ -111,10 +111,6 @@ router.get('/tweet/getAll', async (req, res) => {
             }
         ]
         );
-        console.log("Resultado:");
-        console.log(resultado);
-        //const data = await tweet.find();
-        //res.json(data)
         res.json(resultado)
     }
     catch (error) {
@@ -125,10 +121,26 @@ router.get('/tweet/getAll', async (req, res) => {
 //Get by user_id
 router.get('/tweet/getAll/:user_id', async (req, res) => {
     try {
-        const data = await tweet.find(
-            { "usuario_id": req.params.user_id }
+        const resultado = await tweet.aggregate([
+            { $match : { usuario_id : req.params.user_id } },
+            {
+                $lookup:
+                {
+                    from: 'likes',
+                    localField:'_id',
+                    foreignField: 'tweet_id',
+                    as: 'likes'
+                }
+            },
+            {
+                $addFields: {
+                    likes: { $size: '$likes' },
+                }
+            }
+        ]
         );
-        res.json(data)
+
+        res.json(resultado)
     }
     catch (error) {
         res.status(500).json({ message: error.message })
@@ -240,8 +252,29 @@ router.get('/timeline/:usuario_id', async (req, res) => {
     try {
         let seguidos = await vinculo.find({ seguidor_id: req.params.usuario_id });
         seguidos = seguidos.map(o => o.seguido_id)
-        const timeline = await tweet.find({ usuario_id: { $in: seguidos } }).sort({ fecha: -1 });
-        res.json(timeline)
+        //const timeline = await tweet.find({ usuario_id: { $in: seguidos } }).sort({ fecha: -1 });
+
+        const resultado = await tweet.aggregate([
+            { $match : { usuario_id : { $in: seguidos } } },
+            {
+                $lookup:
+                {
+                    from: 'likes',
+                    localField:'_id',
+                    foreignField: 'tweet_id',
+                    as: 'likes'
+                }
+            },
+            {
+                $addFields: {
+                    likes: { $size: '$likes' },
+                }
+            },
+            { $sort : {fecha: -1} }
+        ]
+        );
+        
+        res.json(resultado)
     }
     catch (error) {
         res.status(500).json({ message: error.message })
